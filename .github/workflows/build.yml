@@ -1,4 +1,4 @@
-name: Build Tauri for ARM
+name: Build Tauri for Raspberry Pi 3+
 
 on:
   push:
@@ -10,40 +10,37 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: pguyot/arm-runner-action@v2.5.2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          base_image: https://dietpi.com/downloads/images/DietPi_RPi-ARMv8-Bullseye.img.xz
-          cpu: cortex-a53
-          bind_mount_repository: true
-          image_additional_mb: 10240
-          optimize_image: false
-          commands: |
-            # Rust complains (rightly) that $HOME doesn't match eid home
-            export HOME=/root
-            # Workaround to CI worker being stuck on Updating crates.io index
-            export CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
-            # Install setup prerequisites
-            apt-get update -y --allow-releaseinfo-change
-            apt-get upgrade -y
-            apt-get autoremove -y
-            apt-get install curl
-            curl https://sh.rustup.rs -sSf | sh -s -- -y
-            . "$HOME/.cargo/env"
-            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash
-            # Install framework specific packages
-            apt-get install -y nodejs
-            npm install next@latest react@latest react-dom@latest eslint-config-next@latest
-            # Install build tools and tauri-cli requirements
-            apt-get install -y libwebkit2gtk-4.0-dev build-essential wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
-            cargo install tauri-cli
-            # Install frontend dependencies
-            npm install
-            # Build the application
-            cargo tauri build
+          targets: armv8-unknown-linux-gnueabihf
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            gcc-arm-linux-gnueabihf \
+            pkg-config
+
+      - name: Set environment variables
+        run: |
+          echo "CARGO_TARGET_ARMV8_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
+          echo "PKG_CONFIG_SYSROOT_DIR=/usr/arm-linux-gnueabihf" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/arm-linux-gnueabihf/lib/pkgconfig" >> $GITHUB_ENV
+
+      - name: Build Tauri app
+        run: |
+          cargo tauri build --target armv8-unknown-linux-gnueabihf
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: tauri-arm64-build
-          path: target/aarch64-unknown-linux-gnu/release/
+          name: tauri-armv8-build
+          path: target/armv8-unknown-linux-gnueabihf/release/
