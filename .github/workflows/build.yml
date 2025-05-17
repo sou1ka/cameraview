@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        cpu: cortex-a53
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -28,8 +29,7 @@ jobs:
             patchelf \
             gcc-aarch64-linux-gnu \
             pkg-config \
-            libssl-dev \
-            libssl-dev:arm64
+            libssl-dev
 
       - name: Set environment variables
         run: |
