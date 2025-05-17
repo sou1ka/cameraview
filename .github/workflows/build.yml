@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: armv8-unknown-linux-gnueabihf
+          targets: aarch64-unknown-linux-gnu
 
       - name: Install dependencies
         run: |
@@ -26,21 +26,24 @@ jobs:
             libappindicator3-dev \
             librsvg2-dev \
             patchelf \
-            gcc-arm-linux-gnueabihf \
+            gcc-aarch64-linux-gnu \
             pkg-config
 
       - name: Set environment variables
         run: |
-          echo "CARGO_TARGET_ARMV8_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
-          echo "PKG_CONFIG_SYSROOT_DIR=/usr/arm-linux-gnueabihf" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/usr/arm-linux-gnueabihf/lib/pkgconfig" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/aarch64-linux-gnu/lib/pkgconfig" >> $GITHUB_ENV
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli
 
       - name: Build Tauri app
         run: |
-          cargo tauri build --target armv8-unknown-linux-gnueabihf
+          cargo tauri build --target aarch64-unknown-linux-gnu
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: tauri-armv8-build
-          path: target/armv8-unknown-linux-gnueabihf/release/
+          name: tauri-arm64-build
+          path: target/aarch64-unknown-linux-gnu/release/
