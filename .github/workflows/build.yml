@@ -36,7 +36,7 @@ jobs:
           echo "PKG_CONFIG_PATH=/usr/aarch64-linux-gnu/lib/pkgconfig" >> $GITHUB_ENV
 
       - name: Install Tauri CLI
-        run: cargo install tauri-cli
+        run: cargo install tauri-cli --version "^1.6.5" --locked
 
       - name: Build Tauri app
         run: |
