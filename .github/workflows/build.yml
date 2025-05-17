@@ -27,6 +27,7 @@ jobs:
             librsvg2-dev \
             patchelf \
             gcc-aarch64-linux-gnu \
+            libssl-dev \
             pkg-config
 
       - name: Set environment variables
